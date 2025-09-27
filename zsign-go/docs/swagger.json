@@ -1,0 +1,162 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {}
+    },
+    "paths": {
+        "/api/download/{file_id}": {
+            "get": {
+                "description": "Download a signed IPA file by its file ID (which is the task ID).",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "summary": "Download a signed IPA file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File ID",
+                        "name": "file_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The signed IPA file",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        },
+        "/api/sign": {
+            "post": {
+                "description": "Upload an IPA file and associated credentials to start the signing process.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Start a new signing job",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "The IPA file to sign",
+                        "name": "ipa",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "The .p12 file containing the certificate and private key",
+                        "name": "p12",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The password for the .p12 file",
+                        "name": "password",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "The .mobileprovision file",
+                        "name": "mobileprovision",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "The ID of the newly created signing task",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/status/{task_id}": {
+            "get": {
+                "description": "Get the status of a signing job by its task ID.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get the status of a signing job",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Task ID",
+                        "name": "task_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/task.Task"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "task.Status": {
+            "type": "string",
+            "enum": [
+                "pending",
+                "running",
+                "success",
+                "failed"
+            ],
+            "x-enum-varnames": [
+                "StatusPending",
+                "StatusRunning",
+                "StatusSuccess",
+                "StatusFailed"
+            ]
+        },
+        "task.Task": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "download_url": {
+                    "type": "string"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/task.Status"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,109 @@
+definitions:
+  task.Status:
+    enum:
+    - pending
+    - running
+    - success
+    - failed
+    type: string
+    x-enum-varnames:
+    - StatusPending
+    - StatusRunning
+    - StatusSuccess
+    - StatusFailed
+  task.Task:
+    properties:
+      created_at:
+        type: string
+      download_url:
+        type: string
+      error:
+        type: string
+      id:
+        type: string
+      status:
+        $ref: '#/definitions/task.Status'
+    type: object
+info:
+  contact: {}
+paths:
+  /api/download/{file_id}:
+    get:
+      description: Download a signed IPA file by its file ID (which is the task ID).
+      parameters:
+      - description: File ID
+        in: path
+        name: file_id
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: The signed IPA file
+          schema:
+            type: file
+        "404":
+          description: Not Found
+      summary: Download a signed IPA file
+  /api/sign:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload an IPA file and associated credentials to start the signing
+        process.
+      parameters:
+      - description: The IPA file to sign
+        in: formData
+        name: ipa
+        required: true
+        type: file
+      - description: The .p12 file containing the certificate and private key
+        in: formData
+        name: p12
+        required: true
+        type: file
+      - description: The password for the .p12 file
+        in: formData
+        name: password
+        required: true
+        type: string
+      - description: The .mobileprovision file
+        in: formData
+        name: mobileprovision
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: The ID of the newly created signing task
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Start a new signing job
+  /api/status/{task_id}:
+    get:
+      description: Get the status of a signing job by its task ID.
+      parameters:
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/task.Task'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get the status of a signing job
+swagger: "2.0"
