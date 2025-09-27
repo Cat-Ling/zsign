@@ -1,0 +1,6 @@
+# Build artifacts
+zsign-go_server
+*.log
+
+# Temporary storage
+temp_storage/
